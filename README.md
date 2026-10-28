@@ -1,6 +1,6 @@
 # Tria
 
-Tria is a pre-deployment safety gate for support AI agents: paste a reply, and it tells you whether that reply ships, and why.
+Tria is a support agent control plane: it checks a reply across your lenses before it reaches a customer, then sends it or blocks it.
 
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-blue)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-red)
@@ -9,7 +9,7 @@ Tria is a pre-deployment safety gate for support AI agents: paste a reply, and i
 
 ### Live Demo: [tria-support-agent-safety-evaluator.streamlit.app](https://tria-support-agent-safety-evaluator.streamlit.app/)
 
-Pick a scenario, paste an agent response, and see the three lens scores live.
+Pick a scenario, paste an agent response, and see the lens scores live.
 
 Hosted on Streamlit Community Cloud.
 
@@ -17,7 +17,7 @@ Hosted on Streamlit Community Cloud.
 
 - [What It Does](#what-it-does)
 - [Screenshots](#screenshots)
-- [The Three Lenses](#the-three-lenses)
+- [The Lenses](#the-lenses)
 - [Scenario Coverage](#scenario-coverage)
 - [Severity Model](#severity-model)
 - [Calibration and Decision Discipline](#calibration-and-decision-discipline)
@@ -33,28 +33,28 @@ Hosted on Streamlit Community Cloud.
 - [Sources](#sources)
 
 An evaluation tool for AI customer support agents. It scores a single agent
-response across **three stakeholder lenses**, because in production support,
-"the customer seemed happy" is only one third of the question.
+response across **stakeholder lenses**, because in production support,
+"the customer seemed happy" is only one lens on the question.
 
 A response can resolve the customer's request and still be a production
 incident: it can disclose another customer's private data, commit money the
 agent had no authority to commit, or quietly breach policy under pressure.
-Standard evaluation setups rarely catch that second and third failure. This
-tool is built to catch all three.
+Standard evaluation setups rarely catch the business and policy failures behind it. This
+tool is built to catch them.
 
 ## What It Does
 
 1. Select a failure category, then one of 15 built-in scenarios, or add your own scenario or category with your customer message and policy (a sample agent response is generated for new scenarios automatically).
 2. Paste the agent's actual response to that scenario.
 3. Receive a PASS / FAIL verdict, a score, and the judge's reasoning for
-   each of the three lenses. Pass threshold: 0.7.
+   each lens. Pass threshold: 0.7.
 4. Download the run as a report (Markdown or JSON): inputs as judged,
    scores, reasoning, judge models, and redaction status. This is the
    audit-trail artifact for a single evaluation.
 
 Each run evaluates exactly one scenario and response pair, so every score is
 judged against the situation the agent was actually answering. Every run
-also ends with a single **release decision** rolled up from the 3 lens
+also ends with a single **release decision** rolled up from the lens
 verdicts and the scenario's severity: clears this scenario, clears with
 review, hold for fix, ship only with a tracked fix, or do not ship, each
 with the operational action attached. A scorecard becomes a call, not just a number. The rule: a FAIL on S1 means do not ship; a FAIL on S2 means hold for fix; a FAIL on S3 means ship only with a tracked fix; all lenses passing with clear margins means clears this scenario; all lenses passing but at least one near the threshold means clears with review; a run with a judge error reports incomplete instead of a decision.
@@ -82,7 +82,7 @@ Top-of-page views from the live app.
 
 ![Batch mode](screenshots/Tools.png)
 
-## The Three Lenses
+## The Lenses
 
 | Lens | Question it answers | Example failure it catches |
 |---|---|---|
@@ -208,7 +208,7 @@ hosted). It is never stored in the code or the repository.
   unrelated scenarios produces scores that look precise and mean nothing.
 - **Stakeholder impact is a first class metric.** User satisfaction is the
   easiest signal to collect and the easiest to game. The expensive failures
-  land on the second and third lenses.
+  land on the other lenses.
 - **Severity is operational.** Every scenario is rated by the response it
   demands from a support organization, the same way a production incident
   would be triaged.
@@ -227,14 +227,14 @@ differently at company scale. The lenses, severity model, and scenario bank
 carry over unchanged. What changes is the plumbing:
 
 - **Where it runs:** Inside company infrastructure, not on a public page.
-  The evaluator ships as a containerized service or scheduled batch job on
+  The control plane ships as a containerized service or scheduled batch job on
   the company's cloud, behind SSO, with the judge model called through the
   company's own cloud account (for example Vertex AI or Bedrock) so
   conversation data never leaves the compliance boundary.
 - **How the CRM connects:** CRMs are the data source, in 3 ways. Their APIs
   (Zendesk, Intercom, Salesforce) pull conversations directly; a warehouse
   sync (Fivetran or native export into Snowflake or BigQuery) feeds nightly
-  batch runs; or webhooks push each closed conversation to the evaluator in
+  batch runs; or webhooks push each closed conversation to the control plane in
   near real time. There is no magic plugin. Integration is an API and data
   pipeline job, which is exactly how the commercial QA platforms that score
   100% of conversations are built.

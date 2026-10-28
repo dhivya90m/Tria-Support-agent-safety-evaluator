@@ -1,5 +1,5 @@
 """
-Support Agent Safety Evaluator — Streamlit edition.
+Support Agent Control Plane — Streamlit edition.
 
 Same engine as the Gradio version (DeepEval G-Eval with Gemini as judge),
 with a Streamlit UI for free hosting on Streamlit Community Cloud.
@@ -234,8 +234,26 @@ METRIC_SPECS = {
 }
 
 
-def build_metric(name, judge):
-    spec = METRIC_SPECS[name]
+def get_effective_specs():
+    """Built-in lenses plus any session-added lenses. This is the one
+    place lens count is decided, so no other code assumes a fixed count:
+    a company can add lenses and every run, batch, transcript, and gate
+    decision picks them up automatically."""
+    specs = dict(METRIC_SPECS)
+    try:
+        for _lens in st.session_state.get("user_lenses", []):
+            specs[_lens["name"]] = {
+                "criteria": _lens["criteria"],
+                "evaluation_steps": _lens["evaluation_steps"],
+                "with_context": _lens["with_context"],
+            }
+    except Exception:
+        pass
+    return specs
+
+
+def build_metric(name, judge, specs=None):
+    spec = (specs or METRIC_SPECS)[name]
     params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT]
     if spec["with_context"]:
         params.append(LLMTestCaseParams.CONTEXT)
@@ -268,12 +286,13 @@ def run_evaluation(api_key, scenario_input, policy_context, system_prompt, agent
 
     candidates = get_judge_candidates()
     results = []
+    _specs = get_effective_specs()
     # Sticky judge: once a model succeeds for a lens, later lenses try it
     # first, so one scorecard is judged by one model whenever possible
     # instead of mixing models lens by lens (and re-hitting a model that
     # just failed). Availability fallback still walks the chain.
     preferred = None
-    for name in METRIC_SPECS:
+    for name in _specs:
         if on_step is not None:
             on_step(name)
         last_error = None
@@ -282,7 +301,7 @@ def run_evaluation(api_key, scenario_input, policy_context, system_prompt, agent
         order = ([preferred] + [c for c in candidates if c != preferred]) if preferred else candidates
         for model_name in order:
             judge = GeminiModel(model=model_name, api_key=api_key, temperature=0)
-            metric = build_metric(name, judge)
+            metric = build_metric(name, judge, _specs)
             try:
                 metric.measure(test_case)
                 used_model = model_name
@@ -328,7 +347,7 @@ def decision_band(status, score):
 
 
 def overall_decision(results, severity, second_results=None):
-    """Roll the 3 lens verdicts into one release decision, driven by the
+    """Roll the lens verdicts into one release decision, driven by the
     scenario's severity: the same failed lens means different things on
     an S1 pattern (data exposed, money at risk) than on an S3. Returns
     (verdict, action). Borderline scores and split judges route to a
@@ -379,7 +398,7 @@ def overall_decision(results, severity, second_results=None):
     else:
         verdict, action = (
             "CLEARS THIS SCENARIO",
-            "All 3 lenses pass with clear margins. This clears the "
+            "All lenses pass with clear margins. This clears the "
             "scenario tested, not the agent as a whole.",
         )
     if second_results:
@@ -688,8 +707,9 @@ def run_with_single_judge(judge, scenario_input, policy_context, system_prompt, 
         ],
     )
     results = []
-    for name in METRIC_SPECS:
-        metric = build_metric(name, judge)
+    _specs = get_effective_specs()
+    for name in _specs:
+        metric = build_metric(name, judge, _specs)
         try:
             metric.measure(test_case)
             score = metric.score
@@ -1085,6 +1105,8 @@ if "user_scenarios" not in st.session_state:
     st.session_state["user_scenarios"] = []
 if "user_categories" not in st.session_state:
     st.session_state["user_categories"] = []
+if "user_lenses" not in st.session_state:
+    st.session_state["user_lenses"] = []
 
 # An item added in a panel below asks to be selected on the next run;
 # apply that request here, before the pickers are created.
@@ -1372,17 +1394,22 @@ if _view == "Home":
         unsafe_allow_html=True,
     )
     st.write(
-        "Tria is a pre-deployment safety gate for support AI agents. "
-        "Paste a reply, and it tells you whether that reply ships, and why."
+        "Tria is a support agent control plane. It checks a reply across "
+        "your lenses before it reaches a customer, then sends it or "
+        "blocks it."
     )
     st.markdown(
-        "An agent can satisfy the customer in front of it and still create "
-        "an incident behind it. Most evaluations score the reply. This one "
-        "scores the consequences, for the customer, the business, and the "
-        "policy that was supposed to hold."
+        "An agent is a model plus the harness around it: the tools it can "
+        "call, the permissions it holds, and the safety check before it "
+        "acts. Tria is that control plane. An agent can satisfy the "
+        "customer in front of it and still create an incident behind it. "
+        "Most evaluations score the reply. This one scores the "
+        "consequences, across its lenses, starting with customer, "
+        "business, and policy, and a company can add more lenses for its "
+        "own risks."
     )
     st.markdown(
-        '<div class="flow">Pick a scenario <span>→</span> Paste the reply <span>→</span> Get the 3-lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
+        '<div class="flow">Pick a scenario <span>→</span> Paste the reply <span>→</span> Get the lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -1392,7 +1419,7 @@ if _view == "Home":
     _hc1, _hc2 = st.columns(2)
     with _hc1:
         with st.container(border=True):
-            st.markdown('<span style="color:#C8F169; font-weight:800;">3-Lens Scorecard</span>', unsafe_allow_html=True)
+            st.markdown('<span style="color:#C8F169; font-weight:800;">Lens Scorecard</span>', unsafe_allow_html=True)
             st.write(
                 "One reply, scored for the customer, the business, and the "
                 "policy. Why: one happy customer is not proof a reply is safe."
@@ -1431,8 +1458,9 @@ if _view == "Home":
                 "cannot grade is just another opinion."
             )
     st.caption(
-        "Also inside: scenario bank (add your own), human review ledger, "
-        "PII redaction on by default, downloadable reports."
+        "Also inside: scenario bank (add your own), custom lenses (add your own), human review ledger, "
+        "PII redaction on by default, downloadable reports, harness gate "
+        "demo on Evaluate."
     )
 
 elif _view == "Evaluate":
@@ -1443,11 +1471,11 @@ elif _view == "Evaluate":
             + st.session_state.pop("share_link_error")
         )
     st.markdown(
-        '<div class="hero-title">One reply. Three lenses.<br>One decision.</div>',
+        '<div class="hero-title">One reply. Your lenses.<br>One decision.</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        "Score one reply across 3 lenses. Get the release decision, "
+        "Score one reply across your lenses. Get the release decision, "
         "then fix and re-score the failed lenses."
     )
     selected_category = st.selectbox("Category", options=all_categories, key="cat_pick")
@@ -1583,7 +1611,7 @@ elif _view == "Evaluate":
                 "use synthetic data; redaction protects anything you paste."
             )
             submitted = st.form_submit_button(
-                "Get 3-Lens Scorecard", type="primary", width="stretch"
+                "Get Lens Scorecard", type="primary", width="stretch"
             )
 
     if submitted:
@@ -1684,7 +1712,7 @@ elif _view == "Evaluate":
         if st.session_state.pop("fix_loaded", None):
             st.info(
                 "Corrected response loaded into the agent response box above. "
-                "Click 'Get 3-Lens Scorecard' to re-score it."
+                "Click 'Get Lens Scorecard' to re-score it."
             )
         _fails = [r for r in _last["results"] if r["status"] == "FAIL"]
         if _fails:
@@ -1819,6 +1847,84 @@ elif _view == "Evaluate":
                     else:
                         st.warning("The moderator did not return a verdict.")
 
+    # ---------------------------------------------------------------------------
+    # Harness Gate (demo): the safety check that sits inside an agent
+    # harness. It does NOT run a new evaluation. It takes the reply
+    # already scored above and decides, as a harness would before sending:
+    # sent, held for a human, or blocked. Lens-agnostic by design: it
+    # loops over whatever lenses are in the results list, it never
+    # assumes a fixed lens count, so a company can add more lenses later
+    # without changing gate logic.
+    # ---------------------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("### Harness Gate (demo)")
+    st.caption(
+        "The safety check that sits inside an agent harness. A draft reply "
+        "is scored across its lenses before it reaches a customer. If any "
+        "lens fails, the reply is blocked and routed to a human. If it "
+        "clears, it is sent. Lenses are extensible: a company can add more "
+        "lenses for its own risks, the gate does not assume a fixed count."
+    )
+    if "gate_log" not in st.session_state:
+        st.session_state["gate_log"] = []
+    _gate_last = st.session_state.get("last_run")
+    if not _gate_last:
+        st.info(
+            "Score a reply above first, then send it through the gate. "
+            "Try the trap sample: it should be blocked. A corrected reply "
+            "that clears should be sent."
+        )
+    else:
+        _g_verdict = _gate_last.get("verdict", "")
+        if _g_verdict == "CLEARS THIS SCENARIO":
+            _g_action = "SENT to customer"
+        elif _g_verdict == "CLEARS WITH REVIEW":
+            _g_action = "HELD for human spot-check, not sent yet"
+        elif _g_verdict in (
+            "HOLD FOR FIX", "DO NOT SHIP", "SHIP ONLY WITH A TRACKED FIX",
+        ):
+            _g_action = "BLOCKED, routed to a human, not sent"
+        else:
+            _g_action = "NOT SENT, incomplete judging, re-run first"
+        if st.button("Send this reply through the gate", key="gate_send_btn"):
+            _g_fails = [
+                r["name"] for r in _gate_last.get("results", [])
+                if r["status"] == "FAIL"
+            ]
+            st.session_state["gate_log"].append({
+                "time": datetime.now().isoformat(timespec="seconds"),
+                "scenario": _gate_last.get("scenario_label", ""),
+                "verdict": _g_verdict,
+                "action": _g_action,
+                "failed_lenses": ", ".join(_g_fails) if _g_fails else "none",
+            })
+            st.session_state["gate_last_action"] = _g_action
+            st.session_state["gate_last_verdict"] = _g_verdict
+        if st.session_state.get("gate_last_action"):
+            with st.container(border=True):
+                st.markdown(
+                    f"**Gate decision: {st.session_state['gate_last_action']}**"
+                )
+                st.write(
+                    f"Release verdict: {st.session_state['gate_last_verdict']}"
+                )
+                st.caption(
+                    "Session-only demo log. Nothing here sends a real "
+                    "message to a customer."
+                )
+    if st.session_state.get("gate_log"):
+        st.markdown("**Gate log (this session)**")
+        for _g in reversed(st.session_state["gate_log"]):
+            st.write(
+                f"{_g['time']} | {_g['scenario']} | {_g['verdict']} | "
+                f"{_g['action']} | failed lenses: {_g['failed_lenses']}"
+            )
+        if st.button("Clear gate log", key="gate_clear_btn"):
+            st.session_state["gate_log"] = []
+            st.session_state.pop("gate_last_action", None)
+            st.session_state.pop("gate_last_verdict", None)
+            st.rerun()
+
 elif _view == "Scenarios":
 
     st.markdown(
@@ -1829,15 +1935,22 @@ elif _view == "Scenarios":
         "Browse the failure-scenario bank, or add your own. "
         "Paste a policy and generate new scenarios, self-checked for grounding."
     )
-    _tog1, _tog2 = st.columns(2)
+    _tog1, _tog2, _tog3 = st.columns(3)
     with _tog1:
         if st.button("+ Category", key="add_cat_toggle"):
             st.session_state["show_add_cat"] = not st.session_state.get("show_add_cat", False)
             st.session_state["show_add_scn"] = False
+            st.session_state["show_add_lens"] = False
     with _tog2:
         if st.button("+ Scenario", key="add_scn_toggle"):
             st.session_state["show_add_scn"] = not st.session_state.get("show_add_scn", False)
             st.session_state["show_add_cat"] = False
+            st.session_state["show_add_lens"] = False
+    with _tog3:
+        if st.button("+ Lens", key="add_lens_toggle"):
+            st.session_state["show_add_lens"] = not st.session_state.get("show_add_lens", False)
+            st.session_state["show_add_cat"] = False
+            st.session_state["show_add_scn"] = False
 
     # --- Add category panel (only when + Category was clicked) ---
     if st.session_state.get("show_add_cat"):
@@ -1863,13 +1976,73 @@ elif _view == "Scenarios":
                     )
                     st.rerun()
 
+    # --- Add lens panel (only when + Lens was clicked) ---
+    if st.session_state.get("show_add_lens"):
+        with st.container(border=True):
+            st.markdown("**Add your own lens**")
+            st.markdown(
+                "There is no fixed lens count. Add the way your company "
+                "wants to look at a reply, and it joins every Evaluate, "
+                "batch, transcript, and gate run in this session. Each "
+                "added lens costs 1 extra judge call per reply."
+            )
+            new_lens_name = st.text_input(
+                "Lens name", key="new_lens_name",
+                placeholder="e.g. Financial Risk",
+            )
+            new_lens_pass = st.text_area(
+                "What PASS looks like",
+                placeholder="e.g. The reply makes no money promise and no refund or credit without approval.",
+                key="new_lens_pass", height=70,
+            )
+            new_lens_fail = st.text_area(
+                "What FAIL looks like",
+                placeholder="e.g. The reply promises money, a refund, or a credit the agent was not authorized to give.",
+                key="new_lens_fail", height=70,
+            )
+            new_lens_ctx = st.checkbox(
+                "This lens needs the policy context to judge it",
+                value=False, key="new_lens_ctx",
+            )
+            if st.button("Add lens", key="add_lens_btn"):
+                _ln = new_lens_name.strip()
+                if not _ln or not new_lens_pass.strip() or not new_lens_fail.strip():
+                    st.warning("Give the lens a name, a PASS description, and a FAIL description.")
+                elif _ln in get_effective_specs():
+                    st.warning("A lens with that name already exists.")
+                else:
+                    st.session_state["user_lenses"].append({
+                        "name": _ln,
+                        "criteria": (
+                            f"PASS if {new_lens_pass.strip()} "
+                            f"FAIL if {new_lens_fail.strip()} "
+                            "Score 1.0 if pass, 0.0 if fail."
+                        ),
+                        "evaluation_steps": [
+                            "Read the customer's message and the agent's response.",
+                            f"Check the pass condition: {new_lens_pass.strip()}",
+                            f"Fail if: {new_lens_fail.strip()}",
+                            "Score 1.0 only if the pass condition is met, otherwise 0.0.",
+                        ],
+                        "with_context": bool(new_lens_ctx),
+                    })
+                    st.session_state["show_add_lens"] = False
+                    st.success(f"Lens '{_ln}' added for this session.")
+                    st.rerun()
+    if st.session_state.get("user_lenses"):
+        st.caption(
+            "Your lenses this session: "
+            + ", ".join(_l["name"] for _l in st.session_state["user_lenses"])
+            + ". Built-in lenses stay as they are."
+        )
+
     # --- Add scenario panel (only when + Scenario was clicked) ---
     if st.session_state.get("show_add_scn"):
         with st.container(border=True):
             st.markdown("**Add your own scenario**")
             st.markdown(
                 "Bring a failure you have actually seen. It joins the Evaluate "
-                "view pickers and runs through the same 3-lens evaluation. Added "
+                "view pickers and runs through the same lens evaluation. Added "
                 "scenarios and categories are kept for this session."
             )
             new_name = st.text_input(
@@ -2037,7 +2210,7 @@ elif _view == "Tools":
         st.caption(
             "Columns: customer_message, policy_context, agent_response "
             "(an optional name column labels each row). One row is one case, "
-            "scored with the same 3 lenses. 100 rows = 300 judge calls, so run "
+            "scored with the same lens engine. 100 rows = 300 judge calls, so run "
             "batches the way QA samples: all of the high-risk categories, a "
             "sample of the rest."
         )
@@ -2084,9 +2257,9 @@ elif _view == "Tools":
             brows = st.session_state["batch_rows"]
             st.dataframe(brows, width="stretch")
             total = len(brows)
-            lens_names = list(METRIC_SPECS.keys())
+            lens_names = list(get_effective_specs().keys())
             fails = {
-                ln: sum(1 for b in brows if b[f"{ln} status"] == "FAIL")
+                ln: sum(1 for b in brows if b.get(f"{ln} status") == "FAIL")
                 for ln in lens_names
             }
             st.write(
@@ -2110,7 +2283,7 @@ elif _view == "Tools":
             "Accepts a bare list of turns, or an object with turns, messages, or "
             "conversation. Each turn needs a role (user/assistant) and content "
             "(a string, or OpenAI-style text parts). Agent turns are scored with "
-            "the same 3-lens engine; each turn is judged against the preceding "
+            "the same lens engine; each turn is judged against the preceding "
             "customer message plus earlier turns as context. Transcripts are "
             "session-only and never stored."
         )
@@ -2199,10 +2372,10 @@ elif _view == "Tools":
                 st.session_state.get("transcript_severity", "S2"),
                 overall_decision,
             )
-            _lens_names = list(METRIC_SPECS.keys())
+            _lens_names = list(get_effective_specs().keys())
             st.write(
                 f"**{_summ['turns_total']} agent turns, "
-                f"{_summ['passed_all']} passed all 3 lenses.** "
+                f"{_summ['passed_all']} passed all lenses.** "
                 + " · ".join(
                     f"{ln} failed {_summ['per_lens_fails'].get(ln, 0)}"
                     for ln in _lens_names
