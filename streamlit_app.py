@@ -1412,7 +1412,10 @@ if _view == "Home":
         "What it is judged against: your SOP and policy first, mapped to "
         "NIST AI Risk Management Framework and OWASP agent risks. Gemini "
         "is the measuring instrument, not the standard. Human calibration "
-        "checks the instrument."
+        "checks the instrument. Tria scores replies from any model. The "
+        "reply being checked may come from GPT, Claude, Gemini, Llama, "
+        "Agentforce, or a company's own model. Gemini Flash is the default "
+        "judge in this demo, not the agent being tested."
     )
     st.markdown(
         '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">What an agent is given, and what Tria checks</div>',

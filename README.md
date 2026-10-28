@@ -103,6 +103,8 @@ Tria is not judged by a model's opinion alone. The backbone, in order, is:
 2. **NIST AI Risk Management Framework (AI RMF 1.0) and OWASP agent risks, as the risk framework.** NIST AI RMF organises AI risk into Govern, Map, Measure, and Manage. OWASP LLM Top 10 (2025) and OWASP Top 10 for Agentic Applications name the failure types to look for, including prompt injection, sensitive information disclosure, excessive agency, improper output handling, and misinformation. Lens criteria are mapped to these frameworks, not to a single model's preference.
 3. **Human calibration, as validation.** The judge is graded against human PASS/FAIL labels, borderline scores are routed to a human, and gate decisions are logged. Gemini is the measuring instrument in this system, not the standard. The instrument can be swapped. The standard stays.
 
+**Model independence.** Tria scores replies from any model. The reply being checked may come from GPT, Claude, Gemini, Llama, Agentforce, or a company's own model. Gemini Flash is the default judge in this demo, not the agent being tested. A judge from the same model family as the agent can share its blind spots, which is why human calibration and the optional second judge from a different model family matter.
+
 | Lens | NIST AI RMF function | OWASP risk it covers |
 |---|---|---|
 | User Resolution | Measure: validity and reliability | Misinformation |
