@@ -18,6 +18,8 @@ Hosted on Streamlit Community Cloud.
 - [What It Does](#what-it-does)
 - [Screenshots](#screenshots)
 - [The Lenses](#the-lenses)
+- [What it is evaluated against](#what-it-is-evaluated-against)
+- [What an agent is given](#what-an-agent-is-given)
 - [Scenario Coverage](#scenario-coverage)
 - [Severity Model](#severity-model)
 - [Calibration and Decision Discipline](#calibration-and-decision-discipline)
@@ -90,6 +92,39 @@ Top-of-page views from the live app.
 | **Stakeholder Protection** | Did the response harm anyone beyond the customer: the company, other customers, compliance? | Agent issues a $500 credit to a customer who threatened a lawsuit, against a $50 authority limit |
 | **Policy Compliance** | Did the stated policy hold under pressure, manipulation, or ambiguity? | Agent follows a user message formatted as a "system override" and approves refunds without verification |
 
+
+## What it is evaluated against
+
+Tria is not judged by a model's opinion alone. The backbone, in order, is:
+
+1. **Your SOP and policy, as ground truth.** The judge checks a reply against the policy text supplied for that scenario. It does not invent the rule. This is the standard the reply is measured against, the way a part is measured against a specification.
+2. **NIST AI Risk Management Framework (AI RMF 1.0) and OWASP agent risks, as the risk framework.** NIST AI RMF organises AI risk into Govern, Map, Measure, and Manage. OWASP LLM Top 10 (2025) and OWASP Top 10 for Agentic Applications name the failure types to look for, including prompt injection, sensitive information disclosure, excessive agency, improper output handling, and misinformation. Lens criteria are mapped to these frameworks, not to a single model's preference.
+3. **Human calibration, as validation.** The judge is graded against human PASS/FAIL labels, borderline scores are routed to a human, and gate decisions are logged. Gemini is the measuring instrument in this system, not the standard. The instrument can be swapped. The standard stays.
+
+| Lens | NIST AI RMF function | OWASP risk it covers |
+|---|---|---|
+| User Resolution | Measure: validity and reliability | Misinformation |
+| Stakeholder Protection | Manage: risk treatment, and Govern: accountability | Sensitive information disclosure, excessive agency |
+| Policy Compliance | Govern: policy, and Measure | Prompt injection, improper output handling |
+
+Custom lenses a company adds follow the same rule: the company writes what PASS and FAIL mean, in its own policy terms, and the judge measures against that. Tria does not claim ISO/IEC 42001 certification. ISO/IEC 42001 certifies an organisation's AI management system, not a single reply. What Tria produces, policy-grounded scores, severity, decision bands, calibration, and a gate log, is the evidence such a management system needs.
+
+
+
+## What an agent is given
+
+An agent is not governed by an SOP alone. It operates from instructions, SOP and policy, knowledge, tools, procedures, and guardrails. Tria evaluates the reply actually sent against SOP and policy, because SOP and policy form the governing standard for the use case:
+
+1. **Instructions:** role and job definition. In platform terms, this is the system prompt, or Agentforce topic instructions.
+2. **SOP + Policy:** permitted actions and non-negotiable rules. Policy defines what and why. An SOP defines how, for one repeatable task.
+3. **Knowledge:** help center articles, knowledge articles, and data libraries retrieved for facts, rather than generated from memory.
+4. **Tools / Actions:** authorised operations, such as order lookup, return filing, or record updates, within the permissions it holds.
+5. **Procedure / Topic:** workflow for the use case. Salesforce calls this a Topic. Zendesk calls it a Procedure, or a Dialogue when it is a scripted branching flow. In other platforms, the use case or intent identifies what the customer is asking about.
+6. **Guardrails:** limits and approval thresholds, including human approval above a money limit, and PII masking.
+
+A human agent works from a call script, talk track, or macro. An AI agent is not scripted word for word. It generates its reply within its procedure, policy, and tools. That is why it requires a pre-send check: the reply, not the script, is what reaches the customer.
+
+
 ## Scenario Coverage
 
 15 scenarios across 5 failure categories, drawn from published standards
@@ -129,14 +164,14 @@ Agreement results from the author's own calibration runs will be published here 
 
 ## Batch Mode
 
-For testing more than one response at a time (for example, a CRM export of past chats), the app scores a CSV row by row with the same engine: columns `customer_message`, `policy_context`, `agent_response`, plus an optional `name`. 100 rows = 300 judge calls, so batch runs follow QA sampling discipline: 100% of high-risk categories, a statistical sample of the rest.
+For testing more than one response at a time (for example, a CRM export of past chats), the app scores a CSV row by row with the same engine: columns `customer_message`, `policy_context`, `agent_response`, plus an optional `name`. 100 rows = 100 judge calls per lens, so batch runs follow QA sampling discipline: 100% of high-risk categories, a statistical sample of the rest.
 
 ### Transcript import (Stage 1)
 
 No more pasting one reply at a time. On the Tools view, upload a JSON
 conversation (a bare list of turns, or an object with turns, messages,
 or conversation; each turn needs a role and content, OpenAI-style text
-parts included) and Tria scores every agent turn with the same 3-lens
+parts included) and Tria scores every agent turn with the same lens
 engine. Each turn is judged against the preceding customer message plus
 earlier turns as context, so cross-turn failures stay detectable. The
 result is a per-turn table, a conversation verdict rolled up from the
@@ -242,7 +277,7 @@ carry over unchanged. What changes is the plumbing:
   exported or warehouse history. That is how a team answers questions like
   "how many chats last quarter disclosed data before verification?" with
   counts and examples instead of anecdotes.
-- **Sampling is the discipline:** 100 chats is 300 judge calls, so scoring
+- **Sampling is the discipline:** 100 chats is 100 judge calls per lens, so scoring
   everything is a cost and latency decision, not a default. Production
   setups typically score 100% of high-risk categories (PII, money movement,
   legal threats) and a statistical sample of the rest, with the sample rate

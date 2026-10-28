@@ -1293,10 +1293,10 @@ def render_scorecard(p):
         f"Release decision: {p['verdict']}. {p['verdict_action']}",
         f"PII redaction: {_redaction_line}",
         "",
-        "## Customer message (as judged)",
+        "## Customer request (as judged)",
         p["judged_input"] or "(empty)",
         "",
-        "## Policy context (as judged)",
+        "## SOP + Policy (as judged)",
         p["judged_policy"] or "(empty)",
         "",
         "## Agent response (as written)",
@@ -1409,6 +1409,28 @@ if _view == "Home":
         "own risks."
     )
     st.markdown(
+        "What it is judged against: your SOP and policy first, mapped to "
+        "NIST AI Risk Management Framework and OWASP agent risks. Gemini "
+        "is the measuring instrument, not the standard. Human calibration "
+        "checks the instrument."
+    )
+    st.markdown(
+        '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">What an agent is given, and what Tria checks</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "An agent operates from instructions, SOP and policy, knowledge, "
+        "tools, procedures, and guardrails. Tria evaluates the reply "
+        "actually sent against SOP and policy, the governing standard "
+        "for that use case.\n"
+        "- **Instructions:** role and job definition.\n"
+        "- **SOP + Policy:** permitted actions and non-negotiable rules.\n"
+        "- **Knowledge:** help center articles and retrieved data for facts.\n"
+        "- **Tools / Actions:** authorised operations, such as order lookup or return filing.\n"
+        "- **Procedure / Topic:** workflow for the use case, such as returns or order status.\n"
+        "- **Guardrails:** limits and approval thresholds, including human approval above a money limit."
+    )
+    st.markdown(
         '<div class="flow">Pick a scenario <span>→</span> Paste the reply <span>→</span> Get the lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
         unsafe_allow_html=True,
     )
@@ -1487,7 +1509,7 @@ elif _view == "Evaluate":
         if st.session_state.get("scn_pick") not in scenario_ids:
             st.session_state["scn_pick"] = scenario_ids[0]
         selected_id = st.selectbox(
-            "Scenario",
+            "Use case",
             options=scenario_ids,
             key="scn_pick",
             format_func=lambda i: f"{by_id[i]['name']} ({by_id[i]['severity']})",
@@ -1577,13 +1599,13 @@ elif _view == "Evaluate":
             st.session_state["system_prompt_box"] = SAMPLE_SYSTEM_PROMPT
         with st.form("eval_form"):
             scenario_input = st.text_area(
-                "Customer message (the test)",
+                "Customer request (the use case)",
                 key=f"scenario_input_{selected_id}",
                 placeholder="",
                 height=90,
             )
             policy_context = st.text_area(
-                "Policy context (what the agent should follow)",
+                "SOP + Policy (what the agent should follow)",
                 key=f"policy_context_{selected_id}",
                 placeholder="",
                 height=90,
@@ -1595,7 +1617,7 @@ elif _view == "Evaluate":
                 height=100,
             )
             agent_response = st.text_area(
-                "Agent response to evaluate",
+                "Agent reply to check",
                 key=f"agent_response_{selected_id}",
                 placeholder="",
                 height=110,
@@ -2058,12 +2080,12 @@ elif _view == "Scenarios":
                 "Severity", options=["S1", "S2", "S3"], key="new_sev",
             )
             new_test = st.text_area(
-                "Customer message", placeholder="The exact message the customer sends...",
+                "Customer request", placeholder="The exact message the customer sends...",
                 key="new_test", height=80,
             )
             new_context = st.text_area(
-                "Policy context",
-                placeholder="The policy the agent should follow in this situation...",
+                "SOP + Policy",
+                placeholder="The SOP and policy the agent should follow in this situation...",
                 key="new_context", height=80,
             )
             if st.button("Add scenario", key="add_scenario_btn"):
@@ -2210,7 +2232,7 @@ elif _view == "Tools":
         st.caption(
             "Columns: customer_message, policy_context, agent_response "
             "(an optional name column labels each row). One row is one case, "
-            "scored with the same lens engine. 100 rows = 300 judge calls, so run "
+            "scored with the same lens engine. 100 rows = 100 judge calls per lens, so run "
             "batches the way QA samples: all of the high-risk categories, a "
             "sample of the rest."
         )
@@ -2291,7 +2313,7 @@ elif _view == "Tools":
             "Conversation JSON", type=["json"], key="transcript_upload"
         )
         _tpolicy = st.text_area(
-            "Policy the agent should have followed",
+            "SOP + Policy the agent should have followed",
             height=80, key="transcript_policy",
         )
         _tsev = st.selectbox(
