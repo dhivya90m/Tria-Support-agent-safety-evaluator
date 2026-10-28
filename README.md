@@ -33,6 +33,7 @@ Hosted on Streamlit Community Cloud.
 - [Limitations](#limitations)
 - [Scaling This in an Enterprise](#scaling-this-in-an-enterprise)
 - [Sources](#sources)
+- [License](#license)
 
 An evaluation tool for AI customer support agents. It scores a single agent
 response across **stakeholder lenses**, because in production support,
@@ -301,6 +302,10 @@ Test patterns are drawn from the OWASP LLM Top 10 and documented red-team
 techniques. The operational framing (failure categories, severity model,
 stakeholder lenses) comes from enterprise support operations and incident
 triage practice.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
