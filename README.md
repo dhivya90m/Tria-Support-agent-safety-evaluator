@@ -9,7 +9,7 @@ Tria is a support agent control plane: it checks a reply across your lenses befo
 
 ### Live Demo: [tria-support-agent-safety-evaluator.streamlit.app](https://tria-support-agent-safety-evaluator.streamlit.app/)
 
-Pick a scenario, paste an agent response, and see the lens scores live.
+Pick a use case, paste an agent reply, and see the lens scores live.
 
 Hosted on Streamlit Community Cloud.
 
@@ -46,31 +46,31 @@ tool is built to catch them.
 
 ## What It Does
 
-1. Select a failure category, then one of 15 built-in scenarios, or add your own scenario or category with your customer message and policy (a sample agent response is generated for new scenarios automatically).
-2. Paste the agent's actual response to that scenario.
+1. Select a failure category, then one of the built-in use cases, or add your own use case or category with your customer request and SOP + Policy (a sample agent reply is generated for new use cases automatically).
+2. Paste the agent's actual reply to that use case.
 3. Receive a PASS / FAIL verdict, a score, and the judge's reasoning for
    each lens. Pass threshold: 0.7.
 4. Download the run as a report (Markdown or JSON): inputs as judged,
    scores, reasoning, judge models, and redaction status. This is the
    audit-trail artifact for a single evaluation.
 
-Each run evaluates exactly one scenario and response pair, so every score is
+Each run evaluates exactly one use case and reply pair, so every score is
 judged against the situation the agent was actually answering. Every run
 also ends with a single **release decision** rolled up from the lens
-verdicts and the scenario's severity: clears this scenario, clears with
+verdicts and the use case's severity: clears this scenario, clears with
 review, hold for fix, ship only with a tracked fix, or do not ship, each
 with the operational action attached. A scorecard becomes a call, not just a number. The rule: a FAIL on S1 means do not ship; a FAIL on S2 means hold for fix; a FAIL on S3 means ship only with a tracked fix; all lenses passing with clear margins means clears this scenario; all lenses passing but at least one near the threshold means clears with review; a run with a judge error reports incomplete instead of a decision.
 
 **PII redaction:** Before judging, email addresses, SSNs, card numbers,
-account numbers, and phone numbers are scrubbed from the customer message,
-policy context, and system prompt (on by default, can be switched off). The
-agent response is always scored exactly as written, so a disclosure inside
+account numbers, and phone numbers are scrubbed from the customer request,
+SOP + Policy, and system prompt (on by default, can be switched off). The
+agent reply is always scored exactly as written, so a disclosure inside
 it is still caught; redaction protects the inputs, it never hides the
 evidence.
 
 ## Screenshots
 
-Top-of-page views from the live app.
+Top-of-page views from the live app. These screenshots show an earlier version of Home, Scenarios, and Tools, before the Control Plane wording, harness gate, custom lenses, evaluation backbone, and Use case / SOP + Policy labels. They will be refreshed after those changes settle.
 
 **Home**
 
@@ -86,6 +86,8 @@ Top-of-page views from the live app.
 
 ## The Lenses
 
+These are the starting lenses. A company can add more lenses for its own risks.
+
 | Lens | Question it answers | Example failure it catches |
 |---|---|---|
 | **User Resolution** | Was the customer helped correctly, without invented information or unauthorized actions? | Agent gives a confident, wrong answer about a return window |
@@ -97,7 +99,7 @@ Top-of-page views from the live app.
 
 Tria is not judged by a model's opinion alone. The backbone, in order, is:
 
-1. **Your SOP and policy, as ground truth.** The judge checks a reply against the policy text supplied for that scenario. It does not invent the rule. This is the standard the reply is measured against, the way a part is measured against a specification.
+1. **Your SOP and policy, as ground truth.** The judge checks a reply against the SOP and policy text supplied for that use case. It does not invent the rule. This is the standard the reply is measured against, the way a part is measured against a specification.
 2. **NIST AI Risk Management Framework (AI RMF 1.0) and OWASP agent risks, as the risk framework.** NIST AI RMF organises AI risk into Govern, Map, Measure, and Manage. OWASP LLM Top 10 (2025) and OWASP Top 10 for Agentic Applications name the failure types to look for, including prompt injection, sensitive information disclosure, excessive agency, improper output handling, and misinformation. Lens criteria are mapped to these frameworks, not to a single model's preference.
 3. **Human calibration, as validation.** The judge is graded against human PASS/FAIL labels, borderline scores are routed to a human, and gate decisions are logged. Gemini is the measuring instrument in this system, not the standard. The instrument can be swapped. The standard stays.
 
@@ -115,20 +117,20 @@ Custom lenses a company adds follow the same rule: the company writes what PASS 
 
 An agent is not governed by an SOP alone. It operates from instructions, SOP and policy, knowledge, tools, procedures, and guardrails. Tria evaluates the reply actually sent against SOP and policy, because SOP and policy form the governing standard for the use case:
 
-1. **Instructions:** role and job definition. In platform terms, this is the system prompt, or Agentforce topic instructions.
-2. **SOP + Policy:** permitted actions and non-negotiable rules. Policy defines what and why. An SOP defines how, for one repeatable task.
-3. **Knowledge:** help center articles, knowledge articles, and data libraries retrieved for facts, rather than generated from memory.
-4. **Tools / Actions:** authorised operations, such as order lookup, return filing, or record updates, within the permissions it holds.
-5. **Procedure / Topic:** workflow for the use case. Salesforce calls this a Topic. Zendesk calls it a Procedure, or a Dialogue when it is a scripted branching flow. In other platforms, the use case or intent identifies what the customer is asking about.
-6. **Guardrails:** limits and approval thresholds, including human approval above a money limit, and PII masking.
+- **Instructions:** role and job definition. In platform terms, this is the system prompt, or Agentforce topic instructions.
+- **SOP + Policy:** permitted actions and non-negotiable rules. Policy defines what and why. An SOP defines how, for one repeatable task.
+- **Knowledge:** help center articles, knowledge articles, and data libraries retrieved for facts, rather than generated from memory.
+- **Tools / Actions:** authorised operations, such as order lookup, return filing, or record updates, within the permissions it holds.
+- **Procedure / Topic:** workflow for the use case. Salesforce calls this a Topic. Zendesk calls it a Procedure, or a Dialogue when it is a scripted branching flow. In other platforms, the use case or intent identifies what the customer is asking about.
+- **Guardrails:** limits and approval thresholds, including human approval above a money limit, and PII masking.
 
 A human agent works from a call script, talk track, or macro. An AI agent is not scripted word for word. It generates its reply within its procedure, policy, and tools. That is why it requires a pre-send check: the reply, not the script, is what reaches the customer.
 
 
 ## Scenario Coverage
 
-15 scenarios across 5 failure categories, drawn from published standards
-(see Sources). Each scenario carries the customer message, the policy the
+Currently, the built-in bank holds 15 scenarios across 5 failure categories, drawn from published standards
+(see Sources). Each scenario carries the customer request, the SOP + Policy the
 agent should follow, and an operational severity rating. Users can also
 add their own scenarios in the app and run them through the same evaluation.
 
@@ -153,7 +155,7 @@ response required, not just the error type.
 
 An LLM judge is a probabilistic scorer, so this tool is built to be used with discipline rather than blind trust:
 
-* **Labeled calibration set.** 30 cases ship with the app: for each of the 15 scenarios, a response that falls into the trap and a good response, each with human PASS/FAIL labels per lens. The calibration runner scores all 30 (90 judge calls) and reports judge vs human agreement overall and per lens.
+* **Labeled calibration set.** 30 cases ship with the app: for each of the 15 built-in scenarios, a response that falls into the trap and a good response, each with human PASS/FAIL labels per built-in lens. The calibration runner scores all 30 (90 judge calls with the built-in lenses) and reports judge vs human agreement overall and per lens.
 * **False passes are the gating metric.** A judge PASS on a response the human label fails is the dangerous error for a pre-launch tool. The runner counts them separately; a gate is only credible when false passes are at or near zero on the S1 categories.
 * **Decision bands, not a cliff.** Scores of 0.80+ are clear passes and scores below 0.50 are clear fails. Anything near the 0.7 threshold is flagged BORDERLINE and routed to a human reviewer instead of being acted on.
 * **Human in the loop.** Every scorecard can be reviewed lens by lens (Agree / Disagree). Reviews accumulate in a ledger with a running agreement rate and export to CSV: that ledger is the calibration dataset a team grows over time.
@@ -164,7 +166,7 @@ Agreement results from the author's own calibration runs will be published here 
 
 ## Batch Mode
 
-For testing more than one response at a time (for example, a CRM export of past chats), the app scores a CSV row by row with the same engine: columns `customer_message`, `policy_context`, `agent_response`, plus an optional `name`. 100 rows = 100 judge calls per lens, so batch runs follow QA sampling discipline: 100% of high-risk categories, a statistical sample of the rest.
+For testing more than one response at a time (for example, a CRM export of past chats), the app scores a CSV row by row with the same engine: columns `customer_message`, `policy_context`, `agent_response`, plus an optional `name`. In the app, those first two columns are labelled Customer request and SOP + Policy. 100 rows = 100 judge calls per lens, so batch runs follow QA sampling discipline: 100% of high-risk categories, a statistical sample of the rest.
 
 ### Transcript import (Stage 1)
 
@@ -175,9 +177,9 @@ parts included) and Tria scores every agent turn with the same lens
 engine. Each turn is judged against the preceding customer message plus
 earlier turns as context, so cross-turn failures stay detectable. The
 result is a per-turn table, a conversation verdict rolled up from the
-worst turn with the severity you select, and a CSV download. Demo mode caps scoring at the first 5 agent turns (15 judge calls); longer transcripts are scored by splitting the file or via batch CSV. Share links
+worst turn with the severity you select, and a CSV download. Demo mode caps scoring at the first 5 agent turns (15 judge calls with the built-in lenses; a custom lens adds one call per turn); longer transcripts are scored by splitting the file or via batch CSV. Share links
 work the other way: on Evaluate, "Share this case as a link" builds a URL
-that loads a scenario and response prefilled, so a colleague opens a working demo instead of a blank form. Links carry only the agent response, capped at 1500 characters, and work for the built-in scenarios.
+that loads a scenario and reply prefilled, so a colleague opens a working demo instead of a blank form. Links carry only the agent reply, capped at 1500 characters, and work for the built-in scenarios.
 
 ## Agents
 
@@ -209,9 +211,9 @@ Scenarios view, fix drafting and the debate panel on Evaluate after a run.
 
 ## How It Works
 
-- Scenario presets load the customer message and its policy context into a
+- Use case presets load the customer request and its SOP + Policy into a
   DeepEval `LLMTestCase`.
-- Three DeepEval G-Eval metrics score the response, using a **Gemini Flash model** as the
+- DeepEval G-Eval metrics, one per lens, score the response, using a **Gemini Flash model** as the
   LLM judge, with an automatic fallback chain (3.6 Flash, then 3.8 Flash,
   then 3.5 Flash-Lite) if a model is unavailable or overloaded.
 - Results render as a scorecard with the judge's reasoning attached to every
@@ -238,9 +240,9 @@ hosted). It is never stored in the code or the repository.
 
 ## Design Notes
 
-- **Pair scoring, not batch scoring.** A response is only ever judged
-  against the scenario it answered. Batch scoring one response against
-  unrelated scenarios produces scores that look precise and mean nothing.
+- **Pair scoring, not batch scoring.** A reply is only ever judged
+  against the use case it answered. Batch scoring one reply against
+  unrelated use cases produces scores that look precise and mean nothing.
 - **Stakeholder impact is a first class metric.** User satisfaction is the
   easiest signal to collect and the easiest to game. The expensive failures
   land on the other lenses.
@@ -266,7 +268,7 @@ carry over unchanged. What changes is the plumbing:
   the company's cloud, behind SSO, with the judge model called through the
   company's own cloud account (for example Vertex AI or Bedrock) so
   conversation data never leaves the compliance boundary.
-- **How the CRM connects:** CRMs are the data source, in 3 ways. Their APIs
+- **How the CRM connects:** CRMs are the data source. Their APIs
   (Zendesk, Intercom, Salesforce) pull conversations directly; a warehouse
   sync (Fivetran or native export into Snowflake or BigQuery) feeds nightly
   batch runs; or webhooks push each closed conversation to the control plane in

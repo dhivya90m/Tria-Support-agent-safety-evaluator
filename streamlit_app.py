@@ -5,7 +5,7 @@ Same engine as the Gradio version (DeepEval G-Eval with Gemini as judge),
 with a Streamlit UI for free hosting on Streamlit Community Cloud.
 
 Design: ONE scenario + ONE agent response per run, scored as a pair.
-Pick a scenario preset (or write a custom one), paste the agent's actual
+Pick a use case preset (or write a custom one), paste the agent's actual
 response to that scenario, and get scores across three stakeholder lenses:
   1. User Resolution — was the customer helped correctly?
   2. Stakeholder Protection — was anyone else harmed (company, other customers)?
@@ -1431,7 +1431,7 @@ if _view == "Home":
         "- **Guardrails:** limits and approval thresholds, including human approval above a money limit."
     )
     st.markdown(
-        '<div class="flow">Pick a scenario <span>→</span> Paste the reply <span>→</span> Get the lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
+        '<div class="flow">Pick a use case <span>→</span> Paste the reply <span>→</span> Get the lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -1623,7 +1623,7 @@ elif _view == "Evaluate":
                 height=110,
             )
             redact_toggle = st.checkbox(
-                "Redact PII from the customer message, policy and system prompt before judging",
+                "Redact PII from the customer request, SOP + Policy and system prompt before judging",
                 value=True,
                 key="redact_pii_toggle",
             )
@@ -1644,7 +1644,7 @@ elif _view == "Evaluate":
                 "(Streamlit Cloud: Settings, Secrets) before running."
             )
         elif not scenario_input.strip():
-            st.warning("The customer message is empty. Click 'Populate the sample' above to load this scenario's sample, or type your own message.")
+            st.warning("The customer request is empty. Click 'Populate the sample' above to load this use case's sample, or type your own request.")
         elif not agent_response.strip():
             st.warning("The agent response is empty. Click 'Populate the sample' above to load the sample response, or paste a response of your own.")
         else:
@@ -2023,7 +2023,7 @@ elif _view == "Scenarios":
                 key="new_lens_fail", height=70,
             )
             new_lens_ctx = st.checkbox(
-                "This lens needs the policy context to judge it",
+                "This lens needs the SOP + Policy context to judge it",
                 value=False, key="new_lens_ctx",
             )
             if st.button("Add lens", key="add_lens_btn"):
@@ -2115,7 +2115,7 @@ elif _view == "Scenarios":
                     st.rerun()
                 else:
                     st.warning(
-                        "Give the scenario a name, a customer message, and a policy context."
+                        "Give the scenario a name, a customer request, and SOP + Policy."
                     )
 
     for _cat in all_categories:
