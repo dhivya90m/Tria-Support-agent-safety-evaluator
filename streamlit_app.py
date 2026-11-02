@@ -1030,7 +1030,7 @@ def agent_debate_verdict(api_key, case_text, lens, positions, rebuttals):
 # ---------------------------------------------------------------------------
 # Streamlit UI
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="Tria", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="TRIA", page_icon="🛡️", layout="wide")
 
 # ---------------------------------------------------------------------------
 # Presentation layer only. The evaluation logic above is unchanged.
@@ -1394,14 +1394,14 @@ if _view == "Home":
         unsafe_allow_html=True,
     )
     st.write(
-        "Tria is a support agent control plane. It checks a reply across "
+        "TRIA is a support agent control plane. It checks a reply across "
         "your lenses before it reaches a customer, then sends it or "
         "blocks it."
     )
     st.markdown(
         "An agent is a model plus the harness around it: the tools it can "
         "call, the permissions it holds, and the safety check before it "
-        "acts. Tria is that control plane. An agent can satisfy the "
+        "acts. TRIA is that control plane. An agent can satisfy the "
         "customer in front of it and still create an incident behind it. "
         "Most evaluations score the reply. This one scores the "
         "consequences, across its lenses, starting with customer, "
@@ -1412,18 +1412,18 @@ if _view == "Home":
         "What it is judged against: your SOP and policy first, mapped to "
         "NIST AI Risk Management Framework and OWASP agent risks. Gemini "
         "is the measuring instrument, not the standard. Human calibration "
-        "checks the instrument. Tria scores replies from any model. The "
+        "checks the instrument. TRIA scores replies from any model. The "
         "reply being checked may come from GPT, Claude, Gemini, Llama, "
         "Agentforce, or a company's own model. Gemini Flash is the default "
         "judge in this demo, not the agent being tested."
     )
     st.markdown(
-        '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">What an agent is given, and what Tria checks</div>',
+        '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">What an agent is given, and what TRIA checks</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
         "An agent operates from instructions, SOP and policy, knowledge, "
-        "tools, procedures, and guardrails. Tria evaluates the reply "
+        "tools, procedures, and guardrails. TRIA evaluates the reply "
         "actually sent against SOP and policy, the governing standard "
         "for that use case.\n"
         "- **Instructions:** role and job definition.\n"
@@ -1438,13 +1438,13 @@ if _view == "Home":
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">Where Tria sits</div>',
+        '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">Where TRIA sits</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        "Tria does not run your agent; it governs it. Generate a reply in a sandbox, during testing, or as a live pre-send draft. "
-        "Tria scores that exact reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it. "
-        "Post-ship QA happens after the customer sees it. Tria happens before."
+        "TRIA does not run your agent; it governs it. Generate a reply in a sandbox, during testing, or as a live pre-send draft. "
+        "TRIA scores that exact reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it. "
+        "Post-ship QA happens after the customer sees it. TRIA happens before."
     )
     st.markdown(
         '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">Everything inside, and why it is there</div>',
@@ -1512,7 +1512,7 @@ elif _view == "Evaluate":
         "Score one reply across your lenses. Get the release decision, "
         "then fix and re-score the failed lenses. Paste a reply from testing, "
         "a draft before sending, or a past reply for a retrospective check. "
-        "Tria does not run your agent."
+        "TRIA does not run your agent."
     )
     selected_category = st.selectbox("Category", options=all_categories, key="cat_pick")
     in_category = [s for s in all_scenarios if s["category"] == selected_category]

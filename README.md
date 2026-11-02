@@ -1,6 +1,6 @@
-# Tria
+# TRIA
 
-Tria is a support agent control plane: it checks a reply across your lenses before it reaches a customer, then sends it or blocks it.
+TRIA is a support agent control plane: it checks a reply across your lenses before it reaches a customer, then sends it or blocks it.
 
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-blue)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-red)
@@ -15,7 +15,7 @@ Hosted on Streamlit Community Cloud.
 
 ## Table of Contents
 
-- [Where Tria sits](#where-tria-sits)
+- [Where TRIA sits](#where-tria-sits)
 - [What It Does](#what-it-does)
 - [Screenshots](#screenshots)
 - [The Lenses](#the-lenses)
@@ -47,13 +47,13 @@ Standard evaluation setups rarely catch the business and policy failures behind 
 tool is built to catch them.
 
 
-## Where Tria sits
+## Where TRIA sits
 
-Tria does not run your agent; it governs it. Generate a reply in a sandbox, during testing, or as a live pre-send draft. Tria scores that exact reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it.
+TRIA does not run your agent; it governs it. Generate a reply in a sandbox, during testing, or as a live pre-send draft. TRIA scores that exact reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it.
 
-Post-ship QA happens after the customer sees it. Tria happens before.
+Post-ship QA happens after the customer sees it. TRIA happens before.
 
-A reply for Tria can come from testing, from a draft before sending, or from the past for a retrospective check through batch or transcript import. The first two prevent an incident. The third finds the pattern so the agent can be fixed before it repeats.
+A reply for TRIA can come from testing, from a draft before sending, or from the past for a retrospective check through batch or transcript import. The first two prevent an incident. The third finds the pattern so the agent can be fixed before it repeats.
 
 Fixing a reply before it is sent costs one corrected reply and one re-score. Fixing it after a customer sees it costs incident management, refunds, and trust.
 
@@ -111,13 +111,13 @@ These are the starting lenses. A company can add more lenses for its own risks.
 
 ## What it is evaluated against
 
-Tria is not judged by a model's opinion alone. The backbone, in order, is:
+TRIA is not judged by a model's opinion alone. The backbone, in order, is:
 
 1. **Your SOP and policy, as ground truth.** The judge checks a reply against the SOP and policy text supplied for that use case. It does not invent the rule. This is the standard the reply is measured against, the way a part is measured against a specification.
 2. **NIST AI Risk Management Framework (AI RMF 1.0) and OWASP agent risks, as the risk framework.** NIST AI RMF organises AI risk into Govern, Map, Measure, and Manage. OWASP LLM Top 10 (2025) and OWASP Top 10 for Agentic Applications name the failure types to look for, including prompt injection, sensitive information disclosure, excessive agency, improper output handling, and misinformation. Lens criteria are mapped to these frameworks, not to a single model's preference.
 3. **Human calibration, as validation.** The judge is graded against human PASS/FAIL labels, borderline scores are routed to a human, and gate decisions are logged. Gemini is the measuring instrument in this system, not the standard. The instrument can be swapped. The standard stays.
 
-**Model independence.** Tria scores replies from any model. The reply being checked may come from GPT, Claude, Gemini, Llama, Agentforce, or a company's own model. Gemini Flash is the default judge in this demo, not the agent being tested. A judge from the same model family as the agent can share its blind spots, which is why human calibration and the optional second judge from a different model family matter.
+**Model independence.** TRIA scores replies from any model. The reply being checked may come from GPT, Claude, Gemini, Llama, Agentforce, or a company's own model. Gemini Flash is the default judge in this demo, not the agent being tested. A judge from the same model family as the agent can share its blind spots, which is why human calibration and the optional second judge from a different model family matter.
 
 | Lens | NIST AI RMF function | OWASP risk it covers |
 |---|---|---|
@@ -125,13 +125,13 @@ Tria is not judged by a model's opinion alone. The backbone, in order, is:
 | Stakeholder Protection | Manage: risk treatment, and Govern: accountability | Sensitive information disclosure, excessive agency |
 | Policy Compliance | Govern: policy, and Measure | Prompt injection, improper output handling |
 
-Custom lenses a company adds follow the same rule: the company writes what PASS and FAIL mean, in its own policy terms, and the judge measures against that. Tria does not claim ISO/IEC 42001 certification. ISO/IEC 42001 certifies an organisation's AI management system, not a single reply. What Tria produces, policy-grounded scores, severity, decision bands, calibration, and a gate log, is the evidence such a management system needs.
+Custom lenses a company adds follow the same rule: the company writes what PASS and FAIL mean, in its own policy terms, and the judge measures against that. TRIA does not claim ISO/IEC 42001 certification. ISO/IEC 42001 certifies an organisation's AI management system, not a single reply. What TRIA produces, policy-grounded scores, severity, decision bands, calibration, and a gate log, is the evidence such a management system needs.
 
 
 
 ## What an agent is given
 
-An agent is not governed by an SOP alone. It operates from instructions, SOP and policy, knowledge, tools, procedures, and guardrails. Tria evaluates the reply actually sent against SOP and policy, because SOP and policy form the governing standard for the use case:
+An agent is not governed by an SOP alone. It operates from instructions, SOP and policy, knowledge, tools, procedures, and guardrails. TRIA evaluates the reply actually sent against SOP and policy, because SOP and policy form the governing standard for the use case:
 
 - **Instructions:** role and job definition. In platform terms, this is the system prompt, or Agentforce topic instructions.
 - **SOP + Policy:** permitted actions and non-negotiable rules. Policy defines what and why. An SOP defines how, for one repeatable task.
@@ -189,7 +189,7 @@ For testing more than one response at a time (for example, a CRM export of past 
 No more pasting one reply at a time. On the Tools view, upload a JSON
 conversation (a bare list of turns, or an object with turns, messages,
 or conversation; each turn needs a role and content, OpenAI-style text
-parts included) and Tria scores every agent turn with the same lens
+parts included) and TRIA scores every agent turn with the same lens
 engine. Each turn is judged against the preceding customer message plus
 earlier turns as context, so cross-turn failures stay detectable. The
 result is a per-turn table, a conversation verdict rolled up from the
