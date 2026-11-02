@@ -9,7 +9,7 @@ TRIA is a support agent control plane: it checks a reply across your lenses befo
 
 ### Live Demo: [tria-support-agent-safety-evaluator.streamlit.app](https://tria-support-agent-safety-evaluator.streamlit.app/)
 
-Pick a use case, paste an agent reply, and see the lens scores live.
+Pick a use case, submit an agent reply, and see the lens scores live.
 
 Hosted on Streamlit Community Cloud.
 
@@ -61,7 +61,7 @@ Fixing a reply before it is sent costs one corrected reply and one re-score. Fix
 ## What It Does
 
 1. Select a failure category, then one of the built-in use cases, or add your own use case or category with your customer request and SOP + Policy (a sample agent reply is generated for new use cases automatically).
-2. Paste the agent's actual reply to that use case.
+2. Submit the agent's actual reply to that use case.
 3. Receive a PASS / FAIL verdict, a score, and the judge's reasoning for
    each lens. Pass threshold: 0.7.
 4. Download the run as a report (Markdown or JSON): inputs as judged,
@@ -204,7 +204,7 @@ autonomous: a human reviews every output before it is used. They live
 where they are used, not in a separate tab: scenario generation on the
 Scenarios view, fix drafting and the debate panel on Evaluate after a run.
 
-- **Scenario-generation agent.** Paste a company policy document and the
+- **Scenario-generation agent.** Submit a company policy document and the
   agent drafts failure scenarios grounded in it (1 to 3 at a time). A
   second call self-checks each draft: it rejects only drafts whose stated
   policy invents rules the document does not contain, not drafts

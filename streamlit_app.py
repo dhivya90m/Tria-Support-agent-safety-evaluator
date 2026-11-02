@@ -5,7 +5,7 @@ Same engine as the Gradio version (DeepEval G-Eval with Gemini as judge),
 with a Streamlit UI for free hosting on Streamlit Community Cloud.
 
 Design: ONE scenario + ONE agent response per run, scored as a pair.
-Pick a use case preset (or write a custom one), paste the agent's actual
+Pick a use case preset (or write a custom one), submit the agent's actual
 response to that scenario, and get scores across three stakeholder lenses:
   1. User Resolution — was the customer helped correctly?
   2. Stakeholder Protection — was anyone else harmed (company, other customers)?
@@ -1434,7 +1434,7 @@ if _view == "Home":
         "- **Guardrails:** limits and approval thresholds, including human approval above a money limit."
     )
     st.markdown(
-        '<div class="flow">Pick a use case <span>→</span> Paste the reply <span>→</span> Get the lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
+        '<div class="flow">Pick a use case <span>→</span> Submit the reply <span>→</span> Get the lens scorecard and release decision <span>→</span> Fix the failed lenses and re-score.</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -1467,7 +1467,7 @@ if _view == "Home":
         with st.container(border=True):
             st.markdown('<span style="color:#C8F169; font-weight:800;">Scenario Generation</span>', unsafe_allow_html=True)
             st.write(
-                "Paste a policy, get failure scenarios, self-checked for "
+                "Submit a policy, get failure scenarios, self-checked for "
                 "grounding. Why: your worst cases are hiding in your policy doc."
             )
     with _hc2:
@@ -1510,7 +1510,7 @@ elif _view == "Evaluate":
     )
     st.markdown(
         "Score one reply across your lenses. Get the release decision, "
-        "then fix and re-score the failed lenses. Paste a reply from testing, "
+        "then fix and re-score the failed lenses. Submit a reply from testing, "
         "a draft before sending, or a past reply for a retrospective check. "
         "TRIA does not run your agent."
     )
@@ -1576,7 +1576,7 @@ elif _view == "Evaluate":
             with st.expander("Share this case as a link"):
                 st.caption(
                     "Open this link and the evaluator loads with this scenario "
-                    "and response prefilled. No account, no paste."
+                    "and response prefilled. No account, no setup."
                 )
                 _cur_resp = (
                     st.session_state.get(f"agent_response_{selected_id}", "")
@@ -1644,7 +1644,7 @@ elif _view == "Evaluate":
             st.caption(
                 "The agent response is scored exactly as written, so a "
                 "disclosure inside it is still caught. Built-in scenarios "
-                "use synthetic data; redaction protects anything you paste."
+                "use synthetic data; redaction protects anything you enter."
             )
             submitted = st.form_submit_button(
                 "Get Lens Scorecard", type="primary", width="stretch"
@@ -1660,7 +1660,7 @@ elif _view == "Evaluate":
         elif not scenario_input.strip():
             st.warning("The customer request is empty. Click 'Populate the sample' above to load this use case's sample, or type your own request.")
         elif not agent_response.strip():
-            st.warning("The agent response is empty. Click 'Populate the sample' above to load the sample response, or paste a response of your own.")
+            st.warning("The agent response is empty. Click 'Populate the sample' above to load the sample response, or enter a response of your own.")
         else:
             judged_input, judged_policy, judged_prompt = (
                 scenario_input, policy_context, system_prompt,
@@ -1969,7 +1969,7 @@ elif _view == "Scenarios":
     )
     st.markdown(
         "Browse the failure-scenario bank, or add your own. "
-        "Paste a policy and generate new scenarios, self-checked for grounding."
+        "Submit a policy and generate new scenarios, self-checked for grounding."
     )
     _tog1, _tog2, _tog3 = st.columns(3)
     with _tog1:
@@ -2083,7 +2083,7 @@ elif _view == "Scenarios":
             )
             new_name = st.text_input(
                 "Scenario name",
-                placeholder="e.g. Customer pastes a fake refund confirmation email",
+                placeholder="e.g. Customer sends a fake refund confirmation email",
                 key="new_name",
             )
             acol1, acol2 = st.columns(2)
@@ -2156,14 +2156,14 @@ elif _view == "Scenarios":
     )
     with st.expander("Scenario-generation agent: draft failure scenarios from a policy"):
         st.caption(
-            "Paste a company policy. The agent drafts failure scenarios grounded "
+            "Submit a company policy. The agent drafts failure scenarios grounded "
             "in it, then a second call self-checks each draft against the policy. "
             "You review the drafts and add only the ones you approve. Added "
             "scenarios behave like your other custom scenarios: session-only, "
             "evaluable immediately on the Evaluate view."
         )
         _agent_policy = st.text_area(
-            "Company policy document (paste the policy text)",
+            "Company policy document (enter the policy text)",
             height=160, key="agent_policy",
         )
         _agent_category = st.selectbox(
@@ -2177,7 +2177,7 @@ elif _view == "Scenarios":
             if not _api:
                 st.error("Add GOOGLE_API_KEY in the app settings before running.")
             elif not _agent_policy.strip():
-                st.warning("Paste the policy text first.")
+                st.warning("Enter the policy text first.")
             else:
                 with st.spinner("Agent drafting scenarios from the policy..."):
                     _drafts = agent_draft_scenarios(
