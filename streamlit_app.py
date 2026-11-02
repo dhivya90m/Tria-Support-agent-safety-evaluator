@@ -1438,6 +1438,15 @@ if _view == "Home":
         unsafe_allow_html=True,
     )
     st.markdown(
+        '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">Where Tria sits</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "Build the agent. Generate a reply in a sandbox, in development, or as a draft before sending. "
+        "Tria scores that reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it. "
+        "Post-ship QA comes after. Tria comes before. Tria does not run your agent. It checks the reply your agent already generated."
+    )
+    st.markdown(
         '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">Everything inside, and why it is there</div>',
         unsafe_allow_html=True,
     )
@@ -1501,7 +1510,9 @@ elif _view == "Evaluate":
     )
     st.markdown(
         "Score one reply across your lenses. Get the release decision, "
-        "then fix and re-score the failed lenses."
+        "then fix and re-score the failed lenses. Paste a reply from testing, "
+        "a draft before sending, or a past reply for a retrospective check. "
+        "Tria does not run your agent."
     )
     selected_category = st.selectbox("Category", options=all_categories, key="cat_pick")
     in_category = [s for s in all_scenarios if s["category"] == selected_category]
