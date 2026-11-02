@@ -49,9 +49,9 @@ tool is built to catch them.
 
 ## Where Tria sits
 
-Build the agent. Generate a reply in a sandbox, in development, or as a draft before sending. Tria scores that reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it.
+Tria does not run your agent; it governs it. Generate a reply in a sandbox, during testing, or as a live pre-send draft. Tria scores that exact reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it.
 
-Post-ship QA comes after. Tria comes before. Tria does not run your agent. It checks the reply your agent already generated.
+Post-ship QA happens after the customer sees it. Tria happens before.
 
 A reply for Tria can come from testing, from a draft before sending, or from the past for a retrospective check through batch or transcript import. The first two prevent an incident. The third finds the pattern so the agent can be fixed before it repeats.
 

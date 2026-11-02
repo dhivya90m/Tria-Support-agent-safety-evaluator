@@ -1442,9 +1442,9 @@ if _view == "Home":
         unsafe_allow_html=True,
     )
     st.markdown(
-        "Build the agent. Generate a reply in a sandbox, in development, or as a draft before sending. "
-        "Tria scores that reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it. "
-        "Post-ship QA comes after. Tria comes before. Tria does not run your agent. It checks the reply your agent already generated."
+        "Tria does not run your agent; it governs it. Generate a reply in a sandbox, during testing, or as a live pre-send draft. "
+        "Tria scores that exact reply. If it clears, send it or deploy that agent version. If it fails, fix it and re-score it, before any real customer sees it. "
+        "Post-ship QA happens after the customer sees it. Tria happens before."
     )
     st.markdown(
         '<div style="color:#C8F169; font-size:1.5rem; font-weight:800; margin:1.2rem 0 0.6rem 0;">Everything inside, and why it is there</div>',
